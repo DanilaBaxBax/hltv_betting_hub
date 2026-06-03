@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HLTV Матчи — Прогнозы</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .match-row { cursor: pointer; }
+        .match-row:hover { background-color: #f8f9fa; }
+        .star { color: #ffc107; }
+        .star.faded { opacity: 0.3; }
+        .team-logo { width: 24px; height: 24px; margin-right: 6px; vertical-align: middle; }
+        .favorite-btn { color: #ccc; cursor: pointer; text-decoration: none; }
+        .favorite-btn.active { color: #ffc107; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark mb-3">
+        <div class="container">
+            <a class="navbar-brand" href="/">🏆 HLTV Betting Hub</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/tournaments">Турниры</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Матчи</h4>
+            <div>
+                <span class="me-3">
+                    Избранные команды:
+                    {% for team in favorite_teams %}
+                        <span class="badge bg-secondary me-1">
+                            {{ team }}
+                            <a href="/set_favorite?team={{ team | urlencode }}" class="text-white ms-1" title="Удалить">&times;</a>
+                        </span>
+                    {% endfor %}
+                    {% if not favorite_teams %}
+                        <span class="text-muted">нет</span>
+                    {% endif %}
+                </span>
+                <a href="/toggle_only_favorites" class="btn btn-sm {% if only_favorites %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                    {% if only_favorites %}✅ Только любимые{% else %}⭐ Только любимые{% endif %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Live матчи -->
+        {% if live_matches %}
+        <h5>🔴 Live сейчас</h5>
+        <div class="list-group mb-4">
+            {% for match in live_matches %}
+            <div class="list-group-item match-row d-flex justify-content-between align-items-center" onclick="window.location.href='/match/{{ match.id }}'">
+                <div>
+                    <span class="badge bg-danger me-2">LIVE</span>
+                    {% if match.time and match.time != 'LIVE' %}<span class="text-muted me-2">{{ match.time }}</span>{% endif %}
+                    <a href="/team/{{ match.team1 | urlencode }}" class="text-dark text-decoration-none" onclick="event.stopPropagation();">
+                        {% if match.team1Logo %}<img src="{{ match.team1Logo }}" class="team-logo" alt="">{% endif %}
+                        <strong>{{ match.team1 }}</strong>
+                    </a>
+                    <span class="mx-2">vs</span>
+                    <a href="/team/{{ match.team2 | urlencode }}" class="text-dark text-decoration-none" onclick="event.stopPropagation();">
+                        {% if match.team2Logo %}<img src="{{ match.team2Logo }}" class="team-logo" alt="">{% endif %}
+                        <strong>{{ match.team2 }}</strong>
+                    </a>
+                    <span class="text-muted ms-2">{{ match.event }}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <a href="/set_favorite?team={{ match.team1 | urlencode }}" class="favorite-btn {% if match.team1 in favorite_teams %}active{% endif %} me-2" title="Избранное" onclick="event.stopPropagation();"><i class="fa fa-star"></i></a>
+                    <a href="/set_favorite?team={{ match.team2 | urlencode }}" class="favorite-btn {% if match.team2 in favorite_teams %}active{% endif %} me-2" title="Избранное" onclick="event.stopPropagation();"><i class="fa fa-star"></i></a>
+                    {% for i in range(5) %}
+                        <i class="fa fa-star star{% if i >= match.stars %} faded{% endif %}"></i>
+                    {% endfor %}
+                    <a href="/match/{{ match.id }}" class="btn btn-sm btn-outline-primary ms-3" onclick="event.stopPropagation();">📊 Прогноз</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Upcoming матчи -->
+        <h5>📅 Предстоящие</h5>
+        <div class="list-group">
+            {% for match in upcoming_matches %}
+            <div class="list-group-item match-row d-flex justify-content-between align-items-center" onclick="window.location.href='/match/{{ match.id }}'">
+                <div>
+                    <div class="small text-muted">
+                        {% if match.date %}<strong>{{ match.date }}</strong>{% endif %}
+                        {% if match.time %} {{ match.time }}{% endif %}
+                    </div>
+                    <a href="/team/{{ match.team1 | urlencode }}" class="text-dark text-decoration-none" onclick="event.stopPropagation();">
+                        {% if match.team1Logo %}<img src="{{ match.team1Logo }}" class="team-logo" alt="">{% endif %}
+                        <strong>{{ match.team1 }}</strong>
+                    </a>
+                    <span class="mx-2">vs</span>
+                    <a href="/team/{{ match.team2 | urlencode }}" class="text-dark text-decoration-none" onclick="event.stopPropagation();">
+                        {% if match.team2Logo %}<img src="{{ match.team2Logo }}" class="team-logo" alt="">{% endif %}
+                        <strong>{{ match.team2 }}</strong>
+                    </a>
+                    <span class="text-muted ms-2">{{ match.event }}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <a href="/set_favorite?team={{ match.team1 | urlencode }}" class="favorite-btn {% if match.team1 in favorite_teams %}active{% endif %} me-2" title="Избранное" onclick="event.stopPropagation();"><i class="fa fa-star"></i></a>
+                    <a href="/set_favorite?team={{ match.team2 | urlencode }}" class="favorite-btn {% if match.team2 in favorite_teams %}active{% endif %} me-2" title="Избранное" onclick="event.stopPropagation();"><i class="fa fa-star"></i></a>
+                    {% for i in range(5) %}
+                        <i class="fa fa-star star{% if i >= match.stars %} faded{% endif %}"></i>
+                    {% endfor %}
+                    <a href="/match/{{ match.id }}" class="btn btn-sm btn-outline-primary ms-3" onclick="event.stopPropagation();">📊 Прогноз</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

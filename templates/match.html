@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ match.team1 }} vs {{ match.team2 }} — Прогноз</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .team-logo { width: 48px; height: 48px; margin-right: 12px; }
+        .favorite-btn { color: #ccc; cursor: pointer; text-decoration: none; }
+        .favorite-btn.active { color: #ffc107; }
+        .player-avatar { width: 36px; height: 36px; border-radius: 50%; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">🏆 HLTV Betting Hub</a>
+        </div>
+    </nav>
+    <div class="container">
+        <a href="/" class="btn btn-outline-secondary mb-3">← Назад к списку</a>
+
+        <!-- Основная информация о матче -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <a href="/team/{{ match.team1 | urlencode }}" class="d-flex align-items-center text-dark text-decoration-none">
+                        {% if match.team1Logo %}<img src="{{ match.team1Logo }}" class="team-logo">{% endif %}
+                        <h3 class="me-2">{{ match.team1 }}</h3>
+                    </a>
+                    <span class="mx-2">vs</span>
+                    <a href="/team/{{ match.team2 | urlencode }}" class="d-flex align-items-center text-dark text-decoration-none">
+                        {% if match.team2Logo %}<img src="{{ match.team2Logo }}" class="team-logo">{% endif %}
+                        <h3 class="ms-2">{{ match.team2 }}</h3>
+                    </a>
+                </div>
+                <p>
+                    <strong>Турнир:</strong> {{ match.event }}<br>
+                    <strong>Дата и время:</strong>
+                    {% if match.date or match.time %}
+                        {% if match.date %}{{ match.date }}{% else %}Дата уточняется{% endif %}
+                        {% if match.time %} {{ match.time }}{% endif %}
+                    {% else %}
+                        Дата и время пока не назначены
+                    {% endif %}
+                    {% if match.live %}<span class="badge bg-danger ms-2">LIVE</span>{% endif %}
+                </p>
+                <div>
+                    <a href="/set_favorite?team={{ match.team1 | urlencode }}" class="favorite-btn me-3 {% if match.team1 in favorite_teams %}active{% endif %}">
+                        <i class="fa fa-star"></i> {{ match.team1 }}
+                    </a>
+                    <a href="/set_favorite?team={{ match.team2 | urlencode }}" class="favorite-btn {% if match.team2 in favorite_teams %}active{% endif %}">
+                        <i class="fa fa-star"></i> {{ match.team2 }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Составы команд и карты (если загружены) -->
+        {% if match_details %}
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header"><h5>{{ match.team1 }} — Состав</h5></div>
+                    <ul class="list-group list-group-flush">
+                        {% for player in match_details.lineups.team1 %}
+                        <li class="list-group-item d-flex align-items-center">
+                            {% if player.photo %}<img src="{{ player.photo }}" class="player-avatar" alt="{{ player.nick }}">{% endif %}
+                            <div>
+                                <strong>{{ player.nick }}</strong><br>
+                                <small class="text-muted">{{ player.name }}</small>
+                            </div>
+                        </li>
+                        {% endfor %}
+                        {% if not match_details.lineups.team1 %}
+                        <li class="list-group-item text-muted">Состав не загружен. <a href="{{ match.url }}" target="_blank">Смотреть на HLTV</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header"><h5>{{ match.team2 }} — Состав</h5></div>
+                    <ul class="list-group list-group-flush">
+                        {% for player in match_details.lineups.team2 %}
+                        <li class="list-group-item d-flex align-items-center">
+                            {% if player.photo %}<img src="{{ player.photo }}" class="player-avatar" alt="{{ player.nick }}">{% endif %}
+                            <div>
+                                <strong>{{ player.nick }}</strong><br>
+                                <small class="text-muted">{{ player.name }}</small>
+                            </div>
+                        </li>
+                        {% endfor %}
+                        {% if not match_details.lineups.team2 %}
+                        <li class="list-group-item text-muted">Состав не загружен. <a href="{{ match.url }}" target="_blank">Смотреть на HLTV</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {% if match_details.maps %}
+        <div class="card mb-4">
+            <div class="card-header"><h5>Карты</h5></div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for map in match_details.maps %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>{{ map.name }}</strong>
+                            <span class="badge bg-secondary">{{ map.pick }}</span>
+                        </div>
+                        {% if map.stats %}<small class="text-muted">{{ map.stats }}</small>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-info">
+            Детали матча не загружены. <a href="{{ match.url }}" target="_blank">Открыть на HLTV.org</a>
+        </div>
+        {% endif %}
+
+        <!-- Прогнозы аналитиков -->
+        <div class="card mb-4">
+            <div class="card-header"><h4>Мнения аналитиков</h4></div>
+            <ul class="list-group list-group-flush">
+                {% for pred in analysts %}
+                <li class="list-group-item">
+                    <strong>{{ pred.analyst }}</strong>:
+                    <span class="text-primary">{{ pred.winner }}</span>
+                    (уверенность: {{ pred.confidence }}%)
+                    <br><small class="text-muted">{{ pred.comment }}</small>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- ИИ-прогноз -->
+        <div class="card border-primary mb-4">
+            <div class="card-header bg-primary text-white"><h4>🤖 ИИ-прогноз</h4></div>
+            <div class="card-body">
+                <h5>Победитель: <strong>{{ ai_prediction.predicted_winner }}</strong></h5>
+                <p>Вероятность победы: {{ ai_prediction.win_probability }}%</p>
+                <p class="text-muted">{{ ai_prediction.explanation }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

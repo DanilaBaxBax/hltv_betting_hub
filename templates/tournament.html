@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event_name }} — Матчи</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .team-logo { width: 24px; height: 24px; margin-right: 6px; vertical-align: middle; }
+        .match-row { cursor: pointer; }
+        .match-row:hover { background-color: #f8f9fa; }
+        .favorite-btn { color: #ccc; cursor: pointer; text-decoration: none; }
+        .favorite-btn.active { color: #ffc107; }
+        .btn-predict { font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark mb-3">
+        <div class="container">
+            <a class="navbar-brand" href="/">🏆 HLTV Betting Hub</a>
+            <a class="nav-link" href="/tournaments">← К турнирам</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>{{ event_name }}</h2>
+        {% if live_matches %}
+        <h5>🔴 Live</h5>
+        <div class="list-group mb-3">
+            {% for match in live_matches %}
+            <div class="list-group-item d-flex justify-content-between align-items-center match-row" onclick="window.location.href='/match/{{ match.id }}'">
+                <div>
+                    <span class="badge bg-danger me-2">LIVE</span>
+                    {% if match.time and match.time != 'LIVE' %}<span class="text-muted me-2">{{ match.time }}</span>{% endif %}
+                    <a href="/team/{{ match.team1 | urlencode }}" class="text-dark text-decoration-none" onclick="event.stopPropagation();">
+                        {% if match.team1Logo %}<img src="{{ match.team1Logo }}" class="team-logo" alt="">{% endif %}
+                        <strong>{{ match.team1 }}</strong>
+                    </a>
+                    <span class="mx-2">vs</span>
+                    <a href="/team/{{ match.team2 | urlencode }}" class="text-dark text-decoration-none" onclick="event.stopPropagation();">
+                        {% if match.team2Logo %}<img src="{{ match.team2Logo }}" class="team-logo" alt="">{% endif %}
+                        <strong>{{ match.team2 }}</strong>
+                    </a>
+                </div>
+                <div class="d-flex align-items-center">
+                    {% for i in range(match.stars) %}⭐{% endfor %}
+                    <a href="/match/{{ match.id }}" class="btn btn-sm btn-outline-primary ms-3 btn-predict" onclick="event.stopPropagation();">📊 Прогноз</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <h5>📅 Предстоящие</h5>
+        <div class="list-group">
+            {% for match in upcoming_matches %}
+            <div class="list-group-item d-flex justify-content-between align-items-center match-row" onclick="window.location.href='/match/{{ match.id }}'">
+                <div>
+                    <div class="small text-muted me-2">
+                        {% if match.date %}<strong>{{ match.date }}</strong>{% endif %}
+                        {% if match.time %} {{ match.time }}{% endif %}
+                    </div>
+                    <a href="/team/{{ match.team1 | urlencode }}" class="text-dark text-decoration-none" onclick="event.stopPropagation();">
+                        {% if match.team1Logo %}<img src="{{ match.team1Logo }}" class="team-logo" alt="">{% endif %}
+                        <strong>{{ match.team1 }}</strong>
+                    </a>
+                    <span class="mx-2">vs</span>
+                    <a href="/team/{{ match.team2 | urlencode }}" class="text-dark text-decoration-none" onclick="event.stopPropagation();">
+                        {% if match.team2Logo %}<img src="{{ match.team2Logo }}" class="team-logo" alt="">{% endif %}
+                        <strong>{{ match.team2 }}</strong>
+                    </a>
+                </div>
+                <div class="d-flex align-items-center">
+                    {% for i in range(match.stars) %}⭐{% endfor %}
+                    <a href="/match/{{ match.id }}" class="btn btn-sm btn-outline-primary ms-3 btn-predict" onclick="event.stopPropagation();">📊 Прогноз</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
